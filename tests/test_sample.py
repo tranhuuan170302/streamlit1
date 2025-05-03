@@ -1,6 +1,1 @@
 print("hello_test")
-print("Hloooersdfsfs")
-print("healasldf")
-print("hello_test")
-print("Hloooersdfsfs")
-print("healasldf")
