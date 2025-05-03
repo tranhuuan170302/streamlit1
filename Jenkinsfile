@@ -1,77 +1,46 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.11'
-            args '-v /tmp:/tmp'
-        }
-    }
+    agent any
 
     stages {
-        stage('Checkout') {
+        stage('Checkout PR') {
             steps {
+                // Checkout code từ Pull Request mà không cần credentials
                 checkout scm
             }
         }
 
-        stage('Setup') {
+        stage('Setup Environment') {
             steps {
-                sh '''
-                    python -m venv venv
-                    . venv/bin/activate
-                    pip install --upgrade pip
-                    pip install -r streamlit1/requirements.txt
-                '''
+                script {
+                    // Cài đặt môi trường ảo và yêu cầu nếu cần thiết
+                    sh '''
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install --upgrade pip
+                        pip install -r requirements.txt
+                    '''
+                }
             }
         }
 
         stage('Lint') {
             steps {
+                // Lint code để đảm bảo không có lỗi cú pháp
                 sh '''
                     . venv/bin/activate
                     pip install flake8
-                    flake8 streamlit1/ --count --select=E9,F63,F7,F82 --show-source --statistics
+                    flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
                 '''
-            }
-        }
-
-        stage('Test') {
-            when {
-                changeRequest()
-            }
-            steps {
-                sh '''
-                    . venv/bin/activate
-                    cd streamlit1
-                    pytest --junitxml=test-results.xml
-                '''
-            }
-            post {
-                always {
-                    junit 'streamlit1/test-results.xml'
-                }
             }
         }
 
         stage('Build') {
             steps {
+                // Bước build ứng dụng nếu cần
                 sh '''
                     . venv/bin/activate
-                    cd streamlit1
-                    # Package application if needed
-                    # For example: python -m build
-                '''
-            }
-        }
-
-        stage('Deploy') {
-            when {
-                branch 'main'
-            }
-            steps {
-                sh '''
-                    echo "Deploying application..."
-                    # Add deployment steps here
-                    # For example: scp or docker commands
+                    echo "Building application..."
+                    python3 app.py
                 '''
             }
         }
@@ -79,7 +48,7 @@ pipeline {
 
     post {
         always {
-            cleanWs()
+            cleanWs() // Dọn dẹp workspace sau khi chạy pipeline
         }
         success {
             echo 'Pipeline completed successfully!'
