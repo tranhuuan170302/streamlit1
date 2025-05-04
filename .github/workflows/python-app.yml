@@ -47,5 +47,5 @@ jobs:
         password: Tranhuuan@170302
     - name: Push Docker image
       run: |
-        docker tag myapp:latest mydockeruser/myapp:latest
-        docker push mydockeruser/myapp:latest
+        docker tag myapp:latest tranhuuan1703/myapp:latest
+        docker push tranhuuan1703/myapp:latest
